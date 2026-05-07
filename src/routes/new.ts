@@ -46,7 +46,7 @@ router.post('/api/payments',
             source: token,
         });
 
-        res.send(200);
+        res.status(201).send({ success: true });
     }
 );
 

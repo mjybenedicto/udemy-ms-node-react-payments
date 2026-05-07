@@ -2,6 +2,9 @@ import request from 'supertest';
 import { app } from '../../app';
 import mongoose from 'mongoose';
 import { Order, OrderStatus } from '../../models/order';
+import { stripe } from '../../stripe';
+
+jest.mock('../../stripe');
 
 // TODO: Validation tests for body
 it('returns a 404 when purchasing an order that does not exist', async () => {
@@ -57,7 +60,7 @@ it('returns a 400 when purchasing a cancelled order', async () => {
 });
 
 
-it('purchases an order', async () => {
+it('it returns a 204 with valid input', async () => {
     const userId = new mongoose.Types.ObjectId().toHexString();
     
     const order = Order.build({
@@ -73,8 +76,13 @@ it('purchases an order', async () => {
         .post('/api/payments')
         .set('Cookie', global.signin(userId))
         .send({
-            token: 'asdfg',
+            token: 'tok_visa',
             orderId: order.id,
         })
-        .expect(200);
+        .expect(201);
+
+    const chargeOptions = (stripe.charges.create as jest.Mock).mock.calls[0][0];
+    expect(chargeOptions.source).toEqual('tok_visa');
+    expect(chargeOptions.amount).toEqual(10 * 100);
+    expect(chargeOptions.currency).toEqual('usd');
 });
