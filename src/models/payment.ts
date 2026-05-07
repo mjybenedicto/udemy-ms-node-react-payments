@@ -10,6 +10,7 @@ interface PaymentAttrs {
 // An interface that describes the properties 
 // that a Payment document has
 interface PaymentDoc extends mongoose.Document {
+    id: string;
     orderId: string;
     stripeId: string;
 }
